@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信用风险建模学习指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2332;
+  --border: rgba(255,255,255,0.06);
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --gold: #c8aa6e;
+  --gold-light: #e8c98a;
+  --blue: #3b82f6;
+  --emerald: #10b981;
+  --rose: #f43f5e;
+  --amber: #f59e0b;
+  --violet: #8b5cf6;
+  --code-bg: #0d1117;
+  --sidebar-w: 280px;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Noto Serif SC', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: linear-gradient(180deg, #0d1220 0%, #0a0e1a 100%);
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  overflow-y: auto;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+.sidebar-logo {
+  padding: 0 24px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.sidebar-logo h1 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.sidebar-logo p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-family: var(--font-display);
+}
+.nav-section {
+  padding: 0 16px;
+  margin-bottom: 8px;
+}
+.nav-section-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  padding: 8px 12px 4px;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 400;
+  transition: all 0.2s;
+  position: relative;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-link.active { color: var(--gold); background: rgba(200,170,110,0.08); }
+.nav-link .nav-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+  min-width: 20px;
+}
+.nav-link.active .nav-num { color: var(--gold); }
+
+/* ── Main ── */
+.main {
+  margin-left: var(--sidebar-w);
+  max-width: 860px;
+  padding: 48px 60px 120px;
+}
+
+/* ── Hero ── */
+.hero {
+  margin-bottom: 64px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(200,170,110,0.1);
+  border: 1px solid rgba(200,170,110,0.2);
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+.hero h2 {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #f1f5f9;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+.hero h2 span { color: var(--gold); }
+.hero-desc {
+  font-size: 17px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 600px;
+}
+.hero-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.hero-link.primary {
+  background: var(--gold);
+  color: #0a0e1a;
+}
+.hero-link.primary:hover { background: var(--gold-light); }
+.hero-link.secondary {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.hero-link.secondary:hover { background: rgba(255,255,255,0.08); }
+
+/* ── Sections ── */
+.section {
+  margin-bottom: 72px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(200,170,110,0.1);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.3px;
+}
+h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 40px 0 16px;
+  padding-left: 14px;
+  border-left: 3px solid var(--gold);
+}
+h4 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 32px 0 12px;
+}
+p { margin-bottom: 14px; color: var(--text); }
+p strong { color: #f1f5f9; font-weight: 600; }
+a { color: var(--gold); text-decoration: none; }
+a:hover { color: var(--gold-light); text-decoration: underline; }
+
+/* ── Tables ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+thead th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+}
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text);
+  vertical-align: top;
+}
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+td code, p code, li code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: rgba(200,170,110,0.08);
+  color: var(--gold-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Code Blocks ── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 16px 0 24px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c9d1d9;
+  position: relative;
+}
+pre .comment { color: #6a737d; }
+pre .keyword { color: #ff7b72; }
+pre .string { color: #a5d6ff; }
+pre .number { color: #79c0ff; }
+pre .function { color: #d2a8ff; }
+pre .operator { color: #ff7b72; }
+
+/* ── Cards ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px 0;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: rgba(255,255,255,0.1); }
+.card-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+/* ── Formula Box ── */
+.formula {
+  background: linear-gradient(135deg, rgba(200,170,110,0.06), rgba(59,130,246,0.04));
+  border: 1px solid rgba(200,170,110,0.15);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin: 20px 0;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--gold-light);
+  text-align: center;
+  letter-spacing: 0.5px;
+  line-height: 2;
+}
+.formula-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+/* ── Info Box ── */
+.info-box {
+  background: rgba(59,130,246,0.06);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 10px 10px 0;
+  padding: 16px 20px;
+  margin: 20px 0;
+  font-size: 14px;
+  color: var(--text);
+}
+.info-box em { color: var(--blue); font-style: normal; font-weight: 500; }
+
+/* ── Diagram ── */
+.diagram {
+  background: var(--code-bg);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ── Tags ── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+}
+.tag-gold { background: rgba(200,170,110,0.12); color: var(--gold); }
+.tag-blue { background: rgba(59,130,246,0.12); color: var(--blue); }
+.tag-emerald { background: rgba(16,185,129,0.12); color: var(--emerald); }
+.tag-rose { background: rgba(244,63,94,0.12); color: var(--rose); }
+
+/* ── Lists ── */
+ul, ol { margin: 12px 0 20px 24px; }
+li { margin-bottom: 8px; color: var(--text); }
+li strong { color: #f1f5f9; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 32px 24px 80px; }
+  .hero h2 { font-size: 28px; }
+  .section-title { font-size: 22px; }
+  table { font-size: 12px; }
+  td, th { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>Credit Risk</h1>
+    <p>Learning Guide</p>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">基础</div>
+    <a href="#overview" class="nav-link active"><span class="nav-num">00</span> 概览</a>
+    <a href="#business" class="nav-link"><span class="nav-num">01</span> 业务背景</a>
+    <a href="#data" class="nav-link"><span class="nav-num">02</span> 数据集</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Pipeline</div>
+    <a href="#processing" class="nav-link"><span class="nav-num">03</span> 数据处理</a>
+    <a href="#features" class="nav-link"><span class="nav-num">04</span> 特征工程</a>
+    <a href="#selection" class="nav-link"><span class="nav-num">05</span> 特征筛选</a>
+    <a href="#training" class="nav-link"><span class="nav-num">06</span> 模型训练</a>
+    <a href="#evaluation" class="nav-link"><span class="nav-num">07</span> 模型评估</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">应用</div>
+    <a href="#policy" class="nav-link"><span class="nav-num">08</span> 策略模拟</a>
+    <a href="#monitoring" class="nav-link"><span class="nav-num">09</span> 监控</a>
+    <a href="#scorecard" class="nav-link"><span class="nav-num">10</span> 评分卡</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">参考</div>
+    <a href="https://github.com/GoDiao/home-credit/blob/main/docs/data_dictionary.md" class="nav-link" target="_blank"><span class="nav-num">+</span> 数据字典</a>
+    <a href="https://github.com/GoDiao/home-credit/blob/main/docs/feature_engineering.md" class="nav-link" target="_blank"><span class="nav-num">+</span> 特征工程详解</a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Hero -->
+  <div class="hero section" id="overview">
+    <div class="hero-badge">Home Credit Default Risk</div>
+    <h2>信用风险建模<br><span>学习指南</span></h2>
+    <p class="hero-desc">
+      从零理解信用风险量化分析的全流程：数据处理、特征工程、模型训练、策略模拟、监控。
+      本文档帮助你理解这个项目<strong>做了什么、为什么这么做、每一步的业务含义</strong>。
+    </p>
+    <div class="hero-links">
+      <a href="https://github.com/GoDiao/home-credit" class="hero-link primary" target="_blank">GitHub 仓库</a>
+      <a href="#business" class="hero-link secondary">开始阅读</a>
+    </div>
+  </div>
+
+  <!-- 1. 业务背景 -->
+  <div class="section" id="business">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-title">业务背景：信用风险是什么</div>
+    </div>
+
+    <h3>核心问题</h3>
+    <p>一个人来申请贷款，银行要不要批？</p>
+    <p>批了，他可能还不上（<strong>违约</strong>）→ 银行亏钱。不批，他其实能还 → 银行少赚一笔。</p>
+    <p>这就是信用风险的核心矛盾：<strong>业务规模 vs 风险控制</strong>。</p>
+
+    <h3>预期损失公式</h3>
+    <p>银行用一个公式量化风险：</p>
+    <div class="formula">
+      <div class="formula-label">Expected Loss</div>
+      EL = PD &times; LGD &times; EAD
+    </div>
+    <table>
+      <thead><tr><th>符号</th><th>含义</th><th>本项目取值</th></tr></thead>
+      <tbody>
+        <tr><td><code>PD</code></td><td>Probability of Default，违约概率</td><td>模型预测输出</td></tr>
+        <tr><td><code>LGD</code></td><td>Loss Given Default，违约后损失比例</td><td>默认 45%（假设回收 55%）</td></tr>
+        <tr><td><code>EAD</code></td><td>Exposure at Default，贷款金额</td><td>实际贷款额</td></tr>
+      </tbody>
+    </table>
+    <div class="info-box">
+      <em>举例</em>：一个人借了 10 万，模型预测他违约概率 10%，违约后预计损失 45%：<br>
+      EL = 10% &times; 45% &times; 100,000 = <strong>4,500 元</strong>
+    </div>
+  </div>
+
+  <!-- 2. 数据集 -->
+  <div class="section" id="data">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-title">数据集：Home Credit 的 6 张表</div>
+    </div>
+
+    <p>数据来自 Kaggle 竞赛 <a href="https://www.kaggle.com/c/home-credit-default-risk" target="_blank">Home Credit Default Risk</a>。</p>
+
+    <h3>数据表关系</h3>
+    <div class="diagram">application_train/test (主表，每行 = 一个贷款申请)
+    │
+    ├── bureau (该申请人在其他机构的历史信贷)
+    │     └── bureau_balance (每月还款状态)
+    │
+    └── previous_application (该申请人在 Home Credit 的历史申请)
+            ├── credit_card_balance (信用卡月度账单)
+            ├── installments_payments (每期还款记录)
+            └── POS_CASH_balance (POS/现金贷款月度状态)</div>
+
+    <h3>各表规模</h3>
+    <table>
+      <thead><tr><th>表名</th><th>行数</th><th>内容</th><th>关联键</th></tr></thead>
+      <tbody>
+        <tr><td>application_train</td><td>307,511</td><td>主表：收入、年龄、工作年限、贷款金额等</td><td>SK_ID_CURR</td></tr>
+        <tr><td>application_test</td><td>48,744</td><td>同上，但没有 TARGET（需要预测）</td><td>SK_ID_CURR</td></tr>
+        <tr><td>bureau</td><td>171 万</td><td>其他机构的信贷记录（额度、逾期等）</td><td>SK_ID_CURR</td></tr>
+        <tr><td>previous_application</td><td>167 万</td><td>Home Credit 历史申请（金额、结果）</td><td>SK_ID_CURR</td></tr>
+        <tr><td>credit_card_balance</td><td>384 万</td><td>信用卡月度余额、取现、还款</td><td>SK_ID_PREV</td></tr>
+        <tr><td>installments_payments</td><td>1360 万</td><td>每期应还/实还金额和日期</td><td>SK_ID_PREV</td></tr>
+        <tr><td>POS_CASH_balance</td><td>1000 万</td><td>POS/现金贷款月度逾期天数</td><td>SK_ID_PREV</td></tr>
+      </tbody>
+    </table>
+
+    <div class="info-box">
+      <em>关键理解</em>：主表只有 122 个字段，但辅助表合计 2800 万行，包含信用卡使用习惯、还款行为、逾期历史等<strong>更细粒度的风险信号</strong>。只用主表 = 浪费大量信息。
+    </div>
+    <p>完整的 218 个字段说明见 <a href="https://github.com/GoDiao/home-credit/blob/main/docs/data_dictionary.md" target="_blank">数据字典</a>。</p>
+  </div>
+
+  <!-- 3. 数据处理 -->
+  <div class="section" id="processing">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-title">数据处理：把原始数据变成可用数据</div>
+    </div>
+
+    <h3>缺失值处理</h3>
+    <p>很多字段有空值（NaN）。处理策略：</p>
+    <div class="diagram">按收入类型分组 → 组内中位数填充 → 全局中位数兜底 → 0 填充残留</div>
+    <p><strong>为什么分组？</strong>不同收入类型的人差异很大。失业者的外部评分缺失率更高，用全局中位数填充会引入噪声。</p>
+
+    <h3>特殊值处理</h3>
+    <p><code>DAYS_EMPLOYED == 365243</code> 是数据中的特殊值，表示<strong>退休人员</strong>。</p>
+    <pre><span class="comment"># 不能直接当缺失值处理，"退休"本身是有用信息</span>
+df[<span class="string">'IS_RETIRED'</span>] = (df[<span class="string">'DAYS_EMPLOYED'</span>] == <span class="number">365243</span>).astype(int)  <span class="comment"># 保留信息</span>
+df.loc[df[<span class="string">'DAYS_EMPLOYED'</span>] == <span class="number">365243</span>, <span class="string">'DAYS_EMPLOYED'</span>] = np.nan  <span class="comment"># 然后置空</span></pre>
+    <p>训练集约 18% 是退休人员，他们的违约率通常较低。</p>
+
+    <h3>分类变量编码</h3>
+    <p>机器学习模型只能处理数字，所以要把文字类别转成数字：</p>
+    <table>
+      <thead><tr><th>类别数量</th><th>编码方法</th><th>例子</th></tr></thead>
+      <tbody>
+        <tr><td>2 种</td><td>Label Encoding → 0/1</td><td>性别 M/F</td></tr>
+        <tr><td>3-10 种</td><td>One-Hot Encoding</td><td>教育程度，生成虚拟变量列</td></tr>
+        <tr><td>11+ 种</td><td>Frequency Encoding</td><td>用该类别出现的比例替代</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. 特征工程 -->
+  <div class="section" id="features">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-title">特征工程：从数据中提取风险信号</div>
+    </div>
+
+    <p>特征工程是整个项目最核心的部分。目标：<strong>从原始数据中构造出能预测违约的信号</strong>。</p>
+
+    <h3>特征工程总览</h3>
+    <table>
+      <thead><tr><th>特征组</th><th>数量</th><th>数据来源</th><th>核心逻辑</th></tr></thead>
+      <tbody>
+        <tr><td>基础衍生</td><td>14</td><td>主表字段</td><td>比率、交叉、分段</td></tr>
+        <tr><td>征信机构聚合</td><td>22</td><td>bureau.csv</td><td>按客户分组，统计历史信贷</td></tr>
+        <tr><td>历史申请聚合</td><td>28</td><td>previous_application.csv</td><td>按客户分组，统计历史申请</td></tr>
+        <tr><td>信用卡聚合</td><td>24</td><td>credit_card_balance.csv</td><td>月度快照聚合</td></tr>
+        <tr><td>还款记录聚合</td><td>18</td><td>installments_payments.csv</td><td>衍生延迟/差额后聚合</td></tr>
+        <tr><td>POS/现金贷款聚合</td><td>12</td><td>POS_CASH_balance.csv</td><td>月度快照聚合</td></tr>
+        <tr><td><strong>合计</strong></td><td><strong>118</strong></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h3>基础衍生特征</h3>
+    <table>
+      <thead><tr><th>特征</th><th>计算公式</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td><code>CREDIT_INCOME_RATIO</code></td><td>贷款金额 / 年收入</td><td>值=5 表示贷款是年收入的 5 倍</td></tr>
+        <tr><td><code>ANNUITY_INCOME_RATIO</code></td><td>年还款 / 年收入</td><td>>0.5 说明超过一半收入用于还贷</td></tr>
+        <tr><td><code>EXT_SOURCE_MEAN</code></td><td>三个外部评分均值</td><td><strong>预测力最强</strong>（IV=0.63）</td></tr>
+        <tr><td><code>IS_RETIRED</code></td><td>DAYS_EMPLOYED==365243</td><td>退休标志</td></tr>
+      </tbody>
+    </table>
+
+    <h3>辅助表聚合</h3>
+    <p>每张辅助表都有上百万行，但主表每行是一个客户。需要把辅助表的信息"汇总"到客户级别。</p>
+    <pre><span class="comment"># 聚合逻辑</span>
+按客户 ID 分组 → 对数值列求 <span class="function">mean</span>/<span class="function">max</span>/<span class="function">min</span>/<span class="function">std</span> → 衍生比率特征
+
+<span class="comment"># 以信用卡为例：一个客户可能有 12 个月的账单（12 行），聚合后变成一行</span>
+<span class="comment"># 原始：客户A → 12 行（每月一行）</span>
+<span class="comment"># 聚合：客户A → CC_AMT_BALANCE_MEAN=5000, CC_AMT_BALANCE_MAX=12000, ...</span></pre>
+
+    <p>完整的 118 个特征列表见 <a href="https://github.com/GoDiao/home-credit/blob/main/docs/feature_engineering.md" target="_blank">特征工程详解</a>。</p>
+  </div>
+
+  <!-- 5. 特征筛选 -->
+  <div class="section" id="selection">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div class="section-title">特征筛选：去掉没用的特征</div>
+    </div>
+
+    <h3>高相关特征删除</h3>
+    <p>两个特征相关系数 > 0.95 → 它们携带几乎相同的信息 → 保留一个即可。</p>
+    <p>277 个特征 → 删除 55 个高相关 → 222 个</p>
+
+    <h3>IV（Information Value）筛选</h3>
+    <div class="formula">
+      <div class="formula-label">Information Value</div>
+      IV = &Sigma; (好客户占比 - 坏客户占比) &times; ln(好客户占比 / 坏客户占比)
+    </div>
+    <table>
+      <thead><tr><th>IV 范围</th><th>预测能力</th><th>处理</th></tr></thead>
+      <tbody>
+        <tr><td>< 0.02</td><td>无预测力</td><td><span class="tag tag-rose">删除</span></td></tr>
+        <tr><td>0.02 - 0.1</td><td>弱</td><td><span class="tag tag-amber">可选</span></td></tr>
+        <tr><td>0.1 - 0.3</td><td>中等</td><td><span class="tag tag-blue">保留</span></td></tr>
+        <tr><td>> 0.3</td><td>强</td><td><span class="tag tag-emerald">必须保留</span></td></tr>
+      </tbody>
+    </table>
+    <p>222 个特征 → 删除 62 个低 IV → <strong>112 个（最终）</strong>。</p>
+    <p><strong>最强预测特征</strong>：EXT_SOURCE（外部评分），IV 远超其他特征。这说明第三方征信数据对信用风险预测至关重要。</p>
+  </div>
+
+  <!-- 6. 模型训练 -->
+  <div class="section" id="training">
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <div class="section-title">模型训练：让机器学会预测违约</div>
+    </div>
+
+    <h3>交叉验证（K-Fold）</h3>
+    <p>只做一次 train/test 划分，结果高度依赖"运气"。解决方案：将训练集分成 K 份（K=5），每次用 4 份训练、1 份验证，重复 5 次，取平均。</p>
+    <div class="diagram">Fold 1: [验证] [训练] [训练] [训练] [训练]  → AUC=0.7551
+Fold 2: [训练] [验证] [训练] [训练] [训练]  → AUC=0.7520
+Fold 3: [训练] [训练] [验证] [训练] [训练]  → AUC=0.7578
+Fold 4: [训练] [训练] [训练] [验证] [训练]  → AUC=0.7543
+Fold 5: [训练] [训练] [训练] [训练] [验证]  → AUC=0.7579
+                                              平均: 0.7554 ± 0.0025</div>
+    <p><strong>Stratified</strong>：每折中正负样本比例与整体一致（8% 违约率），避免某折全是好客户。</p>
+
+    <h3>Logistic Regression（逻辑回归）</h3>
+    <p>用一个 S 形函数（Sigmoid）把线性组合映射到 0-1 之间的概率。</p>
+    <div class="formula">
+      <div class="formula-label">Logistic Regression</div>
+      z = w&#8321;x&#8321; + w&#8322;x&#8322; + ... + w&#8319;x&#8319; + b<br>
+      P(Y=1|x) = &sigma;(z) = 1 / (1 + e<sup>-z</sup>)
+    </div>
+    <p>其中 x&#8321;, x&#8322;, ... 是特征值（如收入、年龄），w&#8321;, w&#8322;, ... 是权重（模型学到的系数）。</p>
+    <p><strong>损失函数</strong>（交叉熵）：</p>
+    <div class="formula">
+      <div class="formula-label">Cross-Entropy Loss</div>
+      L = -1/N &Sigma; [y&#7522;&middot;log(p&#770;&#7522;) + (1-y&#7522;)&middot;log(1-p&#770;&#7522;)]
+    </div>
+    <p><strong>优点</strong>：简单、可解释、训练快。<strong>缺点</strong>：只能捕捉线性关系。</p>
+
+    <h3>XGBoost（极端梯度提升）</h3>
+    <p>一棵决策树能力有限，但把很多棵"弱"树串行叠加，每棵树纠正前面所有树的错误。</p>
+    <div class="formula">
+      <div class="formula-label">XGBoost Prediction</div>
+      &#375;&#7522; = &Sigma; f&#7531;(x&#7522;) &nbsp;&nbsp;(K 棵树的输出之和)
+    </div>
+    <p><strong>训练过程</strong>（boosting）：</p>
+    <div class="diagram">第 1 棵树：拟合残差 = y - &#375;&#8320;（初始预测为均值）
+第 2 棵树：拟合残差 = y - (&#375;&#8320; + f&#8321;)
+第 3 棵树：拟合残差 = y - (&#375;&#8320; + f&#8321; + f&#8322;)
+...
+第 K 棵树：拟合残差 = y - (&#375;&#8320; + f&#8321; + ... + f&#7531;&#8315;&#8321;)</div>
+    <p>每棵树学的是<strong>前面所有树还没学好的部分</strong>（残差），这就是"梯度提升"的含义。</p>
+
+    <h4>关键超参数</h4>
+    <table>
+      <thead><tr><th>参数</th><th>含义</th><th>影响</th></tr></thead>
+      <tbody>
+        <tr><td><code>max_depth</code></td><td>树的最大深度</td><td>越深越复杂，越容易过拟合</td></tr>
+        <tr><td><code>learning_rate</code></td><td>学习率</td><td>越小越稳健但需要更多树</td></tr>
+        <tr><td><code>n_estimators</code></td><td>树的数量</td><td>越多越强，但过大会过拟合</td></tr>
+        <tr><td><code>subsample</code></td><td>行采样比例</td><td><1 可以减少过拟合</td></tr>
+        <tr><td><code>reg_alpha / reg_lambda</code></td><td>L1/L2 正则化</td><td>惩罚叶子权重</td></tr>
+      </tbody>
+    </table>
+
+    <h3>LightGBM（轻量梯度提升）</h3>
+    <p>与 XGBoost 的核心区别：<strong>逐叶生长</strong>（leaf-wise）而非逐层生长（level-wise）。</p>
+    <div class="diagram">XGBoost (逐层):              LightGBM (逐叶):
+      [根]                          [根]
+     /    \                        /    \
+   [叶]  [叶]                   [叶]  [叶]
+  / \    / \                          / \
+[叶][叶][叶][叶]                    [叶] [叶]
+
+每层所有叶子都分裂            只分裂增益最大的叶子</div>
+    <p>逐叶生长效率更高，用更少的树达到相同精度。但容易过拟合，需要限制 max_depth。</p>
+
+    <h3>Stacking Ensemble（堆叠集成）</h3>
+    <p>用一个"元模型"组合多个基模型的预测，取长补短。</p>
+    <div class="diagram">输入 x ───┬─ Logistic → p&#8321; = 0.12
+           ├─ XGBoost  → p&#8322; = 0.08
+           └─ LightGBM → p&#8323; = 0.10
+                     │
+           [元模型: XGBoost]
+                     │
+           最终预测 = 0.09</div>
+
+    <h3>超参数调优（Optuna）</h3>
+    <p><strong>Optuna</strong> 是一个开源的超参数优化框架，使用贝叶斯优化（TPE 算法）智能搜索最优参数。</p>
+    <div class="diagram">传统网格搜索：穷举所有参数组合 → 慢
+随机搜索：随机采样参数 → 效率低
+TPE：根据历史结果建模，智能选择下一组参数 → 快</div>
+    <p>TPE 的工作方式：先随机试几组参数 → 把历史试验分为"好的"和"差的"两组 → 对两组建模 → 在"好的"概率高的区域采样下一组参数。</p>
+
+    <h3>概率校准（Isotonic Calibration）</h3>
+    <p>模型输出的"概率"往往不是真实概率。Isotonic Regression 用分段常数函数修正：</p>
+    <div class="diagram">模型输出:  0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9
+实际违约率: 0.05 0.15 0.28 0.35 0.48 0.55 0.68 0.78 0.88
+校准后:    0.05 0.15 0.28 0.35 0.48 0.55 0.68 0.78 0.88</div>
+    <p>校准后的 PD 才能用于计算预期损失（EL = PD &times; LGD &times; EAD）。</p>
+  </div>
+
+  <!-- 7. 模型评估 -->
+  <div class="section" id="evaluation">
+    <div class="section-header">
+      <div class="section-num">07</div>
+      <div class="section-title">模型评估：怎么判断模型好不好</div>
+    </div>
+
+    <h3>混淆矩阵</h3>
+    <div class="diagram">                    预测为不违约    预测为违约
+实际不违约（好客户）     TN           FP（误杀）
+实际违约（坏客户）       FN（漏检）    TP</div>
+
+    <h3>核心指标</h3>
+    <table>
+      <thead><tr><th>指标</th><th>公式</th><th>含义</th><th>本项目</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Accuracy</strong></td><td>(TP+TN) / 总数</td><td>正确预测比例（不平衡数据不可靠）</td><td>72.7%</td></tr>
+        <tr><td><strong>Precision</strong></td><td>TP / (TP+FP)</td><td>预测为违约中实际违约的比例</td><td>18.4%</td></tr>
+        <tr><td><strong>Recall</strong></td><td>TP / (TP+FN)</td><td>实际违约中被预测到的比例</td><td>69.4%</td></tr>
+        <tr><td><strong>F1</strong></td><td>2&times;P&times;R / (P+R)</td><td>Precision 和 Recall 的调和平均</td><td>29.1%</td></tr>
+        <tr><td><strong>AUC</strong></td><td>ROC 曲线下面积</td><td>模型区分好坏客户的能力</td><td>0.7819</td></tr>
+        <tr><td><strong>KS</strong></td><td>好坏累积分布最大差</td><td>模型最大区分度</td><td>0.4243</td></tr>
+        <tr><td><strong>Gini</strong></td><td>2&times;AUC - 1</td><td>AUC 的等价变换</td><td>0.5637</td></tr>
+      </tbody>
+    </table>
+
+    <h3>ROC 曲线与 AUC</h3>
+    <p>ROC 曲线的绘制过程：</p>
+    <ol>
+      <li>模型给每个客户输出一个违约概率 p</li>
+      <li>从 0 到 1 遍历阈值 t：p &ge; t → 预测为违约</li>
+      <li>每个 t 对应一个 (FPR, TPR) 点</li>
+      <li>把所有点连成曲线，就是 ROC 曲线</li>
+    </ol>
+    <div class="diagram">TPR (Recall)
+1.0 ┤          ___________
+    │         /
+    │        /      ← AUC = 曲线下面积
+    │       /
+    │      /
+    │     /
+0.0 ┤____/
+    0.0              1.0
+         FPR (误杀率)</div>
+    <p><strong>AUC 的含义</strong>：随机抽一个好客户和一个坏客户，模型给坏客户的违约概率高于好客户的概率 = AUC。</p>
+
+    <h3>KS 统计量</h3>
+    <div class="diagram">累积占比
+1.0 ┤              ___--- 好客户
+    │          __--
+    │       _-/
+    │     _/     ← KS = 最大差距
+    │   _/
+    │  / ___--- 坏客户
+    │_/--
+0.0 ┤
+    按违约概率从高到低排序</div>
+
+    <h3>为什么 Recall 远高于 Precision？</h3>
+    <div class="info-box">
+      因为违约率只有 8%，数据严重不平衡。<br><br>
+      假设 1000 个客户：920 好客户，80 坏客户。<br>
+      模型预测了 350 个为违约，其中 TP=55，FP=295。<br><br>
+      Recall = 55/80 = <strong>68.8%</strong> ← 抓住了约 7 成坏客户<br>
+      Precision = 55/350 = <strong>15.7%</strong> ← 每 6 个被拒绝的人里只有 1 个真的会违约<br><br>
+      这是信用风险模型的典型特征，不是 bug。
+    </div>
+  </div>
+
+  <!-- 8. 策略模拟 -->
+  <div class="section" id="policy">
+    <div class="section-header">
+      <div class="section-num">08</div>
+      <div class="section-title">策略模拟：用模型做决策</div>
+    </div>
+
+    <h3>Cut-off 阈值</h3>
+    <div class="diagram">PD ≤ Cut-off → 批准
+PD > Cut-off → 拒绝</div>
+    <p>Cut-off 越高 → 通过率越高 → 但违约风险也越高。核心矛盾：<strong>业务规模 vs 风险控制</strong>。</p>
+
+    <h3>七种推荐策略</h3>
+    <table>
+      <thead><tr><th>策略</th><th>适用场景</th></tr></thead>
+      <tbody>
+        <tr><td><code>target_approval</code></td><td>有明确业务目标（如通过率 80%）</td></tr>
+        <tr><td><code>max_el</code></td><td>有风险预算限制（如 EL &le; 5%）</td></tr>
+        <tr><td><code>max_utility</code></td><td>通用推荐</td></tr>
+        <tr><td><code>max_efficiency</code></td><td>资源有限，追求最高性价比</td></tr>
+        <tr><td><code>pareto_optimal</code></td><td>多目标权衡</td></tr>
+        <tr><td><code>elbow</code></td><td>自动寻找边际 EL 突变的"拐点"</td></tr>
+        <tr><td><code>conservative / moderate / aggressive</code></td><td>风险偏好明确（EL &le; 2%/5%/10%）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 9. 监控 -->
+  <div class="section" id="monitoring">
+    <div class="section-header">
+      <div class="section-num">09</div>
+      <div class="section-title">监控：模型上线后还要盯着</div>
+    </div>
+
+    <h3>PSI（Population Stability Index）</h3>
+    <div class="formula">
+      <div class="formula-label">PSI</div>
+      PSI = &Sigma; (实际占比 - 基准占比) &times; ln(实际占比 / 基准占比)
+    </div>
+    <table>
+      <thead><tr><th>PSI 范围</th><th>含义</th><th>行动</th></tr></thead>
+      <tbody>
+        <tr><td>&le; 0.10</td><td><span class="tag tag-emerald">稳定</span></td><td>无需处理</td></tr>
+        <tr><td>0.10 - 0.25</td><td><span class="tag tag-gold">轻微漂移</span></td><td>关注</td></tr>
+        <tr><td>> 0.25</td><td><span class="tag tag-rose">显著漂移</span></td><td>调查原因，可能需要重新训练</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Vintage Analysis</h3>
+    <p>按贷款发放时间分组，追踪各期的逾期率。如果新发放的贷款逾期率上升，说明模型或策略出了问题。</p>
+
+    <h3>Roll Rate</h3>
+    <p>追踪客户在不同逾期状态之间的迁移（如 30 天逾期 → 60 天逾期）。如果大量客户从轻度逾期"滚"到重度逾期，说明早期预警失效。</p>
+  </div>
+
+  <!-- 10. 评分卡 -->
+  <div class="section" id="scorecard">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <div class="section-title">评分卡：把概率变成分数</div>
+    </div>
+
+    <p>银行一线人员看不懂"违约概率 0.15"，他们习惯用<strong>分数</strong>。</p>
+
+    <div class="formula">
+      <div class="formula-label">Scorecard Formula</div>
+      Score = BaseScore + (PDO / ln(2)) &times; (ln(Odds) - ln(BaseOdds))
+    </div>
+
+    <table>
+      <thead><tr><th>参数</th><th>含义</th><th>本项目取值</th></tr></thead>
+      <tbody>
+        <tr><td><code>BaseScore</code></td><td>基准分数</td><td>600</td></tr>
+        <tr><td><code>BaseOdds</code></td><td>基准好坏比</td><td>50:1</td></tr>
+        <tr><td><code>PDO</code></td><td>Points to Double Odds</td><td>20</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>PDO 的含义</strong>：好坏比每翻一倍，分数增加 20 分。</p>
+    <div class="diagram">好坏比 50:1  → 600 分
+好坏比 100:1 → 620 分（翻倍 +20）
+好坏比 25:1  → 580 分（减半 -20）</div>
+
+    <h3>分数与决策</h3>
+    <div class="diagram">高分（700+）   → 违约概率极低 → 自动批准
+中分（550-700） → 有风险       → 人工审核
+低分（<550）    → 违约概率高   → 自动拒绝</div>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center;">
+    <p style="font-family: var(--font-display); font-size: 13px; color: var(--text-dim);">
+      Home Credit Default Risk &mdash; Credit Risk Modeling Learning Guide<br>
+      <a href="https://github.com/GoDiao/home-credit" target="_blank">GitHub</a>
+    </p>
+  </div>
+
+</div>
+
+<script>
+// Scroll-triggered section animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+// Active nav link on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    const top = s.offsetTop - 100;
+    if (window.scrollY >= top) current = s.id;
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
