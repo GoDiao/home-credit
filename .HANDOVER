@@ -1,0 +1,96 @@
+# Handover - Home Credit Project
+
+## 2026-05-01 Model Registry 增强
+
+### 本次完成
+- 新增 `model_registry.py`：基于本地 JSON 文件的轻量模型注册表工具。
+  - 默认注册表路径：`outputs/models/model_registry.json`
+  - 支持记录：模型名称、类型、模型文件路径、训练时间、特征数量、特征列表 hash、指标、样本量、目标变量、随机种子、Git commit、artifact 元信息等。
+  - 提供 `register_model()`、`build_model_record()`、`upsert_model_record()`、`load_registry()`、`save_registry()` 等函数。
+- 接入训练保存链路：
+  - `PDModel.save_model()` 自动注册 logistic / xgboost / lightgbm。
+  - `StackingEnsemble.save_model()` 自动注册 stacking。
+  - `train_lightgbm.py`、`train_stacking.py` 在独立训练脚本末尾补充注册记录。
+- 接入 API：
+  - 新增 `api.services.get_model_registry()`。
+  - 新增接口：`GET /api/models/registry`。
+- 新增测试：`tests/test_model_registry.py` 覆盖特征 hash、record 构建、registry upsert、save/load。
+
+### 已验证
+- Python 语法检查：
+  - `python -m py_compile model_registry.py pd_model.py train_lightgbm.py train_stacking.py api/services.py api/main.py tests/test_model_registry.py`
+- 后端单元测试：
+  - `uv run python -m pytest -q`
+  - 结果：`30 passed`
+- 前端构建：
+  - `npm --prefix E:\AProject\TianX\Leah\home_credit\dashboard run build`
+  - 结果：Vite build 成功。
+
+### 注意事项
+- 首次训练/保存模型后才会生成或更新 `outputs/models/model_registry.json`。
+- 前端构建存在 Vite chunk size warning（已有体积提示，不影响构建通过）。
+- pytest 中存在 Pandas4Warning 和 matplotlib 中文字体 warning，当前不影响测试通过。
+
+## 2026-05-01 Frontend UI Review 建议
+
+### 总体判断
+- 当前 dashboard 已经形成较完整的「黑金高端风控驾驶舱」视觉方向：深色 Obsidian 背景、金色 accent、低透明卡片、细边框、ECharts 可视化和侧边栏信息架构整体统一。
+- 当前短板不是“能不能看”，而是还需要从「展示型 dashboard」进一步升级为「决策型风控工作台」：让用户一进入页面就知道当前模型/策略/监控状态的业务结论和下一步动作。
+
+### UI/UX 优先改进项
+1. **Overview 顶部增加 Risk Briefing / Executive Summary**
+   - 用一句业务结论总结当前状态，例如最佳模型、AUC/KS/Gini、推荐 cut-off、通过率、预期损失率、PSI 状态。
+   - 目标：让首页从“图表集合”变成“管理层/风控人员的今日判断”。
+
+2. **建立稳定的业务语义色体系**
+   - Gold：当前选中、推荐策略、高价值信息。
+   - Blue/Cyan：模型性能、技术指标。
+   - Emerald：稳定、安全、通过、正常。
+   - Amber：观察、边界、轻微风险。
+   - Rose：违约、漂移、拒绝、高风险。
+   - 避免每个图表独立随意配色，降低用户学习成本。
+
+3. **减弱全局卡片 hover glow 的装饰感**
+   - 普通信息卡 hover 只改变 border/background。
+   - 只有可点击钻取卡、推荐策略卡、当前最佳模型、风险告警卡使用 glow。
+   - 告警类 glow 应使用 amber/rose，而非统一 gold。
+
+4. **加入 Model Governance / Registry 面板**
+   - 利用新增接口 `GET /api/models/registry` 展示模型注册信息。
+   - 推荐字段：`model_type`、`trained_at`、`feature_count`、`features_hash`、`code_version`、artifact size、metrics。
+   - 目标：让项目从“模型展示”升级为“准生产级模型治理”。
+
+5. **Policy Simulation 升级为策略工作台**
+   - 增加 Conservative / Balanced / Growth 三张策略卡。
+   - 明确展示 cut-off、Approval Rate、Default/EL Rate、Good Keep Rate、Bad Capture Rate、通过/拒绝人数。
+   - 用 trade-off curve 表达「通过率 vs 预期损失」的核心权衡。
+
+6. **Monitoring 增加总体状态和行动建议**
+   - 不只展示 PSI 明细，还应有 Overall Stability Status：Stable / Watch / Alert。
+   - 对 Top drifted features 给出 action recommendation，例如是否建议重训、检查数据源、关注 bureau 类特征。
+
+7. **侧边栏交互小优化**
+   - 当前点击 logo 折叠 sidebar 不够直觉。
+   - 建议增加明确的 chevron collapse 按钮；logo 更适合作为品牌识别或回首页入口。
+
+8. **文案更“金融机构化/决策化”**
+   - 页面标题可以从泛标题变为任务型标题。
+   - 示例：
+     - `Model Evaluation` → `Which model should be deployed?`
+     - `Policy Simulation` → `Choose the cut-off under loss constraints`
+     - `Monitoring` → `Are feature distributions still stable?`
+   - 导航也可考虑：`Portfolio Overview`、`Model Performance`、`Feature Intelligence`、`Credit Policy`、`Stability Monitor`。
+
+### 推荐视觉方向
+- **保留现有 A 方向：Luxury Fintech Command Center**，这是目前最成熟的基调。
+- 同时吸收：
+  - Bloomberg / Risk Terminal 的高信息密度和业务严肃感。
+  - MLflow / 模型治理平台的 registry、artifact、code version、audit trail 能力。
+
+### 最小落地路线
+如果只安排一轮前端增强，建议按以下顺序：
+1. Overview 增加 Executive Summary / Risk Briefing。
+2. Models 页面接入 `/api/models/registry`，展示 Model Registry 卡片或表格。
+3. Policy 页面增加 Conservative / Balanced / Growth 三张推荐策略卡。
+4. Monitoring 页面增加 Overall Status 与 Top Drift Action Recommendation。
+5. 调整全局卡片 hover：普通卡弱化，重点/告警/可点击卡保留状态化 glow。

@@ -1,0 +1,255 @@
+/* ============================================================
+   OBSIDIAN TERMINAL — Credit Risk Analytics
+   A luxury fintech interface: deep, precise, sophisticated
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ── Deep Obsidian Palette ── */
+  --bg-void: #050508;
+  --bg-primary: #0a0b10;
+  --bg-secondary: #0f1118;
+  --bg-card: rgba(15, 17, 24, 0.85);
+  --bg-card-hover: rgba(20, 23, 32, 0.9);
+  --bg-elevated: rgba(22, 25, 35, 0.95);
+  --bg-glass: rgba(255, 255, 255, 0.02);
+
+  /* ── Refined Borders ── */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-medium: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(200, 170, 110, 0.2);
+  --border-data: rgba(59, 130, 246, 0.2);
+
+  /* ── Typography Colors ── */
+  --text-primary: #e8eaed;
+  --text-secondary: #8b8fa3;
+  --text-muted: #4a4e63;
+  --text-accent: #c8aa6e;
+
+  /* ── Data Colors (refined) ── */
+  --accent-blue: #4a9eff;
+  --accent-cyan: #22d3ee;
+  --accent-emerald: #34d399;
+  --accent-amber: #fbbf24;
+  --accent-rose: #fb7185;
+  --accent-violet: #a78bfa;
+  --accent-gold: #c8aa6e;
+
+  /* ── Gradients ── */
+  --gradient-blue: linear-gradient(135deg, #4a9eff, #22d3ee);
+  --gradient-emerald: linear-gradient(135deg, #34d399, #6ee7b7);
+  --gradient-rose: linear-gradient(135deg, #fb7185, #fda4af);
+  --gradient-amber: linear-gradient(135deg, #fbbf24, #fcd34d);
+  --gradient-violet: linear-gradient(135deg, #a78bfa, #c4b5fd);
+  --gradient-gold: linear-gradient(135deg, #c8aa6e, #e8d5a3);
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow-gold: 0 0 30px rgba(200, 170, 110, 0.08);
+  --shadow-glow-blue: 0 0 30px rgba(74, 158, 255, 0.1);
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* ── Typography ── */
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-void);
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(74, 158, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(200, 170, 110, 0.02) 0%, transparent 50%),
+    var(--bg-void);
+}
+
+/* ── Scrollbar (refined) ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* ── Typography ── */
+h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+h3 {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Element Plus Overrides ── */
+.el-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-md) !important;
+  backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.el-card:hover {
+  border-color: var(--border-accent) !important;
+  box-shadow: var(--shadow-glow-gold) !important;
+}
+
+.el-card__header {
+  border-bottom: 1px solid var(--border-subtle) !important;
+  padding: 16px 20px !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.3px;
+}
+
+.el-card__body {
+  color: var(--text-primary) !important;
+}
+
+.el-table {
+  --el-table-bg-color: transparent !important;
+  --el-table-tr-bg-color: transparent !important;
+  --el-table-header-bg-color: rgba(255, 255, 255, 0.02) !important;
+  --el-table-row-hover-bg-color: rgba(200, 170, 110, 0.05) !important;
+  --el-table-border-color: var(--border-subtle) !important;
+  --el-table-text-color: var(--text-secondary) !important;
+  --el-table-header-text-color: var(--text-muted) !important;
+}
+
+.el-table .el-table__row--striped td.el-table__cell {
+  background: rgba(255, 255, 255, 0.01) !important;
+}
+
+.el-tag {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500 !important;
+}
+
+.el-radio-button__inner {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+}
+
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background: var(--accent-gold) !important;
+  border-color: var(--accent-gold) !important;
+  color: #0a0b10 !important;
+  box-shadow: -1px 0 0 0 var(--accent-gold) !important;
+}
+
+.el-tabs__item {
+  color: var(--text-muted) !important;
+  font-weight: 500 !important;
+}
+
+.el-tabs__item.is-active {
+  color: var(--accent-gold) !important;
+}
+
+.el-tabs__active-bar {
+  background: var(--accent-gold) !important;
+}
+
+.el-slider__runway {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.el-slider__bar {
+  background: var(--gradient-gold) !important;
+}
+
+.el-slider__button {
+  border-color: var(--accent-gold) !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.el-progress__text {
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+}
+
+.el-input__wrapper {
+  background: var(--bg-secondary) !important;
+  box-shadow: 0 0 0 1px var(--border-subtle) inset !important;
+}
+
+.el-input__inner {
+  color: var(--text-primary) !important;
+}
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 170, 110, 0); }
+  50% { box-shadow: 0 0 20px 2px rgba(200, 170, 110, 0.1); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.animate-in {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-in-delay-1 { animation-delay: 0.06s; }
+.animate-in-delay-2 { animation-delay: 0.12s; }
+.animate-in-delay-3 { animation-delay: 0.18s; }
+.animate-in-delay-4 { animation-delay: 0.24s; }
+.animate-in-delay-5 { animation-delay: 0.30s; }
+.animate-in-delay-6 { animation-delay: 0.36s; }

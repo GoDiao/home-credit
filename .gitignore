@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.egg
+
+# Virtual environments
+.venv/
+
+# Node
+node_modules/
+dashboard/node_modules/
+dashboard/dist/
+
+# Data（太大，使用者自己跑 pipeline 生成）
+data/raw/
+data/processed/
+
+# 产物（跑 pipeline 自动生成）
+outputs/models/
+outputs/reports/
+outputs/visualizations/
+outputs/pipeline.log
+
+# 临时文件
+tmp/
+*.log
+.pytest_cache/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
