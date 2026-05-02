@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>特征工程详解 - 信用风险建模</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a; --bg-card: #111827; --border: rgba(255,255,255,0.06);
+  --text: #e2e8f0; --text-muted: #64748b; --text-dim: #475569;
+  --gold: #c8aa6e; --gold-light: #e8c98a;
+  --blue: #3b82f6; --emerald: #10b981; --rose: #f43f5e; --amber: #f59e0b;
+  --code-bg: #0d1117; --sidebar-w: 280px;
+  --font-display: 'Outfit', sans-serif; --font-body: 'Noto Serif SC', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.8; -webkit-font-smoothing: antialiased; }
+.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: linear-gradient(180deg, #0d1220, #0a0e1a); border-right: 1px solid var(--border); padding: 32px 0; overflow-y: auto; z-index: 100; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+.sidebar-logo { padding: 0 24px 28px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.sidebar-logo h1 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold); }
+.sidebar-logo p { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-display); }
+.nav-section { padding: 0 16px; margin-bottom: 8px; }
+.nav-section-title { font-family: var(--font-display); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); padding: 8px 12px 4px; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-family: var(--font-display); font-size: 13px; transition: all 0.2s; }
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-link.active { color: var(--gold); background: rgba(200,170,110,0.08); }
+.nav-link .nav-num { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); min-width: 20px; }
+.nav-link.active .nav-num { color: var(--gold); }
+.main { margin-left: var(--sidebar-w); max-width: 960px; padding: 48px 60px 120px; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 13px; color: var(--gold); text-decoration: none; margin-bottom: 24px; }
+.back-link:hover { color: var(--gold-light); }
+h1.page-title { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
+.page-desc { font-size: 15px; color: var(--text-muted); margin-bottom: 48px; }
+h2 { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #f1f5f9; margin: 48px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+h2 .count-tag { font-family: var(--font-mono); font-size: 12px; color: var(--gold); background: rgba(200,170,110,0.1); padding: 2px 8px; border-radius: 4px; margin-left: 10px; }
+h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: #f1f5f9; margin: 32px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+p { margin-bottom: 12px; }
+p strong { color: #f1f5f9; }
+a { color: var(--gold); text-decoration: none; }
+a:hover { color: var(--gold-light); }
+table { width: 100%; border-collapse: collapse; margin: 12px 0 28px; font-size: 14px; }
+thead th { font-family: var(--font-display); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); position: sticky; top: 0; }
+td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text); vertical-align: top; }
+tr:hover { background: rgba(255,255,255,0.02); }
+td:first-child { font-family: var(--font-mono); font-size: 12px; color: var(--gold-light); white-space: nowrap; }
+td code { font-family: var(--font-mono); font-size: 12px; background: rgba(200,170,110,0.08); color: var(--gold-light); padding: 1px 5px; border-radius: 3px; }
+pre { background: var(--code-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 16px 20px; margin: 12px 0 24px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; color: #c9d1d9; overflow-x: auto; }
+.info-box { background: rgba(59,130,246,0.06); border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 16px 0; font-size: 14px; }
+.info-box em { color: var(--blue); font-style: normal; font-weight: 500; }
+.tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; }
+.tag-gold { background: rgba(200,170,110,0.12); color: var(--gold); }
+.tag-emerald { background: rgba(16,185,129,0.12); color: var(--emerald); }
+.tag-rose { background: rgba(244,63,94,0.12); color: var(--rose); }
+.section { opacity: 0; transform: translateY(16px); transition: opacity 0.5s, transform 0.5s; }
+.section.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding: 24px 20px 80px; } h1.page-title { font-size: 26px; } }
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo"><h1>Credit Risk</h1><p>Feature Engineering</p></div>
+  <div class="nav-section">
+    <div class="nav-section-title">导航</div>
+    <a href="index.html" class="nav-link"><span class="nav-num">&larr;</span> 返回学习指南</a>
+    <a href="data_dictionary.html" class="nav-link"><span class="nav-num">&rarr;</span> 数据字典</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">特征组</div>
+    <a href="#base" class="nav-link active"><span class="nav-num">A</span> 基础衍生 (14)</a>
+    <a href="#bureau" class="nav-link"><span class="nav-num">B</span> 征信聚合 (22)</a>
+    <a href="#prev" class="nav-link"><span class="nav-num">C</span> 历史申请 (28)</a>
+    <a href="#cc" class="nav-link"><span class="nav-num">D</span> 信用卡 (24)</a>
+    <a href="#ip" class="nav-link"><span class="nav-num">E</span> 还款记录 (18)</a>
+    <a href="#pos" class="nav-link"><span class="nav-num">F</span> POS/现金 (12)</a>
+    <a href="#processing" class="nav-link"><span class="nav-num">+</span> 数据处理补充</a>
+  </div>
+</nav>
+
+<div class="main">
+  <a href="index.html" class="back-link">&larr; 返回学习指南</a>
+  <h1 class="page-title">特征工程详解</h1>
+  <p class="page-desc">项目中所有 118 个工程特征的计算方法和业务含义。原始字段含义见 <a href="data_dictionary.html">数据字典</a>。</p>
+
+  <table>
+    <thead><tr><th>特征组</th><th>数量</th><th>数据来源</th></tr></thead>
+    <tbody>
+      <tr><td>基础衍生</td><td>14</td><td>主表字段计算</td></tr>
+      <tr><td>征信机构聚合</td><td>22</td><td>bureau.csv</td></tr>
+      <tr><td>历史申请聚合</td><td>28</td><td>previous_application.csv</td></tr>
+      <tr><td>信用卡聚合</td><td>24</td><td>credit_card_balance.csv</td></tr>
+      <tr><td>还款记录聚合</td><td>18</td><td>installments_payments.csv</td></tr>
+      <tr><td>POS/现金贷款聚合</td><td>12</td><td>POS_CASH_balance.csv</td></tr>
+      <tr><td><strong>合计</strong></td><td><strong>118</strong></td><td></td></tr>
+    </tbody>
+  </table>
+  <p>命名规则：<code>{来源}_{原始字段}_{聚合方式}</code>。BUREAU_=征信，PREV_=历史申请，CC_=信用卡，IP_=还款，POS_=POS/现金。</p>
+
+  <!-- A -->
+  <div class="section" id="base">
+    <h2>A. 基础衍生特征<span class="count-tag">14 个</span></h2>
+    <p>从主表字段直接计算，不需要关联其他表。</p>
+    <h3>债务负担类</h3>
+    <table>
+      <thead><tr><th>特征</th><th>计算公式</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>CREDIT_INCOME_RATIO</td><td>AMT_CREDIT / (AMT_INCOME_TOTAL + 1)</td><td>贷款金额 / 年收入。值=5 表示贷款是年收入的 5 倍</td></tr>
+        <tr><td>ANNUITY_INCOME_RATIO</td><td>AMT_ANNUITY / (AMT_INCOME_TOTAL + 1)</td><td>年还款 / 年收入。>0.5 说明超过一半收入用于还贷</td></tr>
+      </tbody>
+    </table>
+    <h3>年龄与工龄</h3>
+    <table>
+      <thead><tr><th>特征</th><th>计算公式</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>AGE_YEARS</td><td>-DAYS_BIRTH / 365</td><td>申请时年龄</td></tr>
+        <tr><td>AGE_GROUP</td><td>pd.cut(AGE_YEARS, [0,25,35,45,55,100])</td><td>年龄分段：0=&lt;25，1=25-35，2=35-45，3=45-55，4=55+</td></tr>
+        <tr><td>EMPLOYMENT_YEARS</td><td>-DAYS_EMPLOYED / 365</td><td>当前工作年限</td></tr>
+        <tr><td>INCOME_PER_EMPLOYMENT_YEAR</td><td>AMT_INCOME / (EMPLOYMENT_YEARS + 1)</td><td>每工龄年收入，反映职业成长速度</td></tr>
+        <tr><td>CHILDREN_RATIO</td><td>CNT_CHILDREN / (CNT_FAM_MEMBERS + 1)</td><td>子女占家庭比例，值高说明负担重</td></tr>
+      </tbody>
+    </table>
+    <h3>外部评分（最强预测力）</h3>
+    <table>
+      <thead><tr><th>特征</th><th>计算公式</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>EXT_SOURCE_MEAN</td><td>mean(EXT_SOURCE_1, 2, 3)</td><td><span class="tag tag-emerald">IV=0.63 最强</span> 三个外部征信评分均值</td></tr>
+        <tr><td>EXT_SOURCE_STD</td><td>std(EXT_SOURCE_1, 2, 3)</td><td>评分标准差，值高说明征信机构评价分歧大</td></tr>
+        <tr><td>EXT_SOURCE_MIN</td><td>min(EXT_SOURCE_1, 2, 3)</td><td>最低评分，"木桶效应"</td></tr>
+        <tr><td>EXT_SOURCE_MAX</td><td>max(EXT_SOURCE_1, 2, 3)</td><td>最高评分</td></tr>
+        <tr><td>DOCUMENT_COUNT</td><td>sum(FLAG_DOCUMENT_*)</td><td>提交文件数量</td></tr>
+        <tr><td>IS_RETIRED</td><td>(DAYS_EMPLOYED == 365243) &rarr; 0/1</td><td>退休标志（365243 是数据中的特殊值）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- B -->
+  <div class="section" id="bureau">
+    <h2>B. 征信机构聚合特征<span class="count-tag">22 个</span></h2>
+    <p>数据来源：<code>bureau.csv</code>，按 <code>SK_ID_CURR</code> 分组聚合。</p>
+    <h3>信贷历史时间</h3>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>BUREAU_DAYS_CREDIT_MIN</td><td>min</td><td>最近一次征信记录（值越大越接近今天）</td></tr>
+        <tr><td>BUREAU_DAYS_CREDIT_MAX</td><td>max</td><td>最早一次征信记录（信贷历史长度）</td></tr>
+        <tr><td>BUREAU_DAYS_CREDIT_MEAN</td><td>mean</td><td>平均征信记录时间</td></tr>
+      </tbody>
+    </table>
+    <h3>逾期特征</h3>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>BUREAU_CREDIT_DAY_OVERDUE_MAX</td><td>max</td><td>历史最大逾期天数</td></tr>
+        <tr><td>BUREAU_CREDIT_DAY_OVERDUE_MEAN</td><td>mean</td><td>平均逾期天数</td></tr>
+        <tr><td>BUREAU_AMT_CREDIT_MAX_OVERDUE_MAX</td><td>max</td><td>历史最大逾期金额</td></tr>
+        <tr><td>BUREAU_AMT_CREDIT_SUM_OVERDUE_SUM</td><td>sum</td><td>所有征信信贷当前逾期总额</td></tr>
+      </tbody>
+    </table>
+    <h3>信贷额度与债务</h3>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>BUREAU_AMT_CREDIT_SUM_SUM</td><td>sum</td><td>征信信贷总额（其他机构总授信）</td></tr>
+        <tr><td>BUREAU_AMT_CREDIT_SUM_DEBT_SUM</td><td>sum</td><td>未偿还债务总额，值高说明多头借贷</td></tr>
+        <tr><td>BUREAU_LOAN_COUNT</td><td>count</td><td>征信信贷总数</td></tr>
+        <tr><td>BUREAU_ACTIVE_LOAN_COUNT</td><td>count(Active)</td><td>当前活跃征信信贷数</td></tr>
+        <tr><td>BUREAU_DEBT_CREDIT_RATIO</td><td>DEBT/CREDIT</td><td>征信信贷使用率，接近 1 说明额度用完</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- C -->
+  <div class="section" id="prev">
+    <h2>C. 历史申请聚合特征<span class="count-tag">28 个</span></h2>
+    <p>数据来源：<code>previous_application.csv</code>，按 <code>SK_ID_CURR</code> 分组聚合。</p>
+    <h3>审批结果特征</h3>
+    <table>
+      <thead><tr><th>特征</th><th>计算</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>PREV_APP_COUNT</td><td>count</td><td>历史申请总次数，频繁申请是风险信号</td></tr>
+        <tr><td>PREV_APPROVED_COUNT</td><td>count(Approved)</td><td>被批准次数</td></tr>
+        <tr><td>PREV_REFUSED_COUNT</td><td>count(Refused)</td><td>被拒绝次数，多次被拒说明信用差</td></tr>
+        <tr><td>PREV_APPROVAL_RATE</td><td>APPROVED / TOTAL</td><td>历史通过率</td></tr>
+        <tr><td>PREV_REFUSED_RATE</td><td>REFUSED / TOTAL</td><td><span class="tag tag-rose">风险信号</span> 历史拒绝率</td></tr>
+      </tbody>
+    </table>
+    <h3>金额与时间</h3>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>PREV_AMT_APPLICATION_MIN/MAX/MEAN</td><td>min/max/mean</td><td>历史申请金额范围</td></tr>
+        <tr><td>PREV_AMT_CREDIT_MIN/MAX/MEAN</td><td>min/max/mean</td><td>历史批准金额范围</td></tr>
+        <tr><td>PREV_AMT_DOWN_PAYMENT_MIN/MAX/MEAN</td><td>min/max/mean</td><td>历史首付金额</td></tr>
+        <tr><td>PREV_DAYS_DECISION_MIN/MAX/MEAN</td><td>min/max/mean</td><td>历史申请时间</td></tr>
+        <tr><td>PREV_CNT_PAYMENT_MEAN</td><td>mean</td><td>平均贷款期限</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- D -->
+  <div class="section" id="cc">
+    <h2>D. 信用卡聚合特征<span class="count-tag">24 个</span></h2>
+    <p>数据来源：<code>credit_card_balance.csv</code>（月度快照），按 <code>SK_ID_CURR</code> 分组聚合。</p>
+    <h3>核心比率特征</h3>
+    <table>
+      <thead><tr><th>特征</th><th>计算公式</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>CC_UTILIZATION_RATIO</td><td>月均余额 / 月均额度</td><td><span class="tag tag-rose">>80% 高风险</span> 额度使用率</td></tr>
+        <tr><td>CC_PAYMENT_RATIO</td><td>月均还款 / 月均余额</td><td>还款比率。<100% 说明未全额还款</td></tr>
+        <tr><td>CC_DPD_RATIO</td><td>逾期月数 / 总月数</td><td>逾期月份占比</td></tr>
+        <tr><td>CC_ACTIVE_RATIO</td><td>Active月数 / 总月数</td><td>活跃账户占比，多头借贷信号</td></tr>
+      </tbody>
+    </table>
+    <h3>余额与取现</h3>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>CC_AMT_BALANCE_MEAN/MAX/STD</td><td>mean/max/std</td><td>月均余额/最高余额/余额波动</td></tr>
+        <tr><td>CC_AMT_CREDIT_LIMIT_ACTUAL_MEAN/MAX</td><td>mean/max</td><td>平均/最高信用卡额度</td></tr>
+        <tr><td>CC_AMT_DRAWINGS_CURRENT_MEAN/MAX</td><td>mean/max</td><td>月均/最高取现金额，取现多说明现金流紧张</td></tr>
+        <tr><td>CC_SK_DPD_MEAN/MAX</td><td>mean/max</td><td>平均/最大逾期天数</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- E -->
+  <div class="section" id="ip">
+    <h2>E. 还款记录聚合特征<span class="count-tag">18 个</span></h2>
+    <p>数据来源：<code>installments_payments.csv</code>，按 <code>SK_ID_CURR</code> 分组聚合。</p>
+    <h3>中间衍生列（逐行计算）</h3>
+    <table>
+      <thead><tr><th>列名</th><th>计算公式</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>PAYMENT_DELAY</td><td>实还日 - 应还日</td><td>正值=晚还，负值=早还</td></tr>
+        <tr><td>PAYMENT_DIFF</td><td>实还额 - 应还额</td><td>负值=少还</td></tr>
+        <tr><td>PAYMENT_RATIO</td><td>实还额 / 应还额</td><td>还款完成度</td></tr>
+      </tbody>
+    </table>
+    <h3>聚合特征</h3>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>IP_PAYMENT_DELAY_MEAN/MAX</td><td>mean/max</td><td>平均/最长还款延迟天数</td></tr>
+        <tr><td>IP_PAYMENT_DIFF_MEAN/MIN</td><td>mean/min</td><td>平均还款差额/最大少还</td></tr>
+        <tr><td>IP_PAYMENT_RATIO_MEAN/MIN</td><td>mean/min</td><td>平均/最差还款完成度</td></tr>
+        <tr><td>IP_LATE_COUNT</td><td>count(DELAY>0)</td><td>逾期次数</td></tr>
+        <tr><td>IP_LATE_RATIO</td><td>LATE/TOTAL</td><td><span class="tag tag-rose">核心指标</span> 逾期比例</td></tr>
+        <tr><td>IP_UNDERPAY_COUNT</td><td>count(DIFF<0)</td><td>少还次数，资金不足信号</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- F -->
+  <div class="section" id="pos">
+    <h2>F. POS/现金贷款聚合特征<span class="count-tag">12 个</span></h2>
+    <p>数据来源：<code>POS_CASH_balance.csv</code>（月度快照），按 <code>SK_ID_CURR</code> 分组聚合。</p>
+    <table>
+      <thead><tr><th>特征</th><th>聚合</th><th>业务含义</th></tr></thead>
+      <tbody>
+        <tr><td>POS_SK_DPD_MEAN/MAX</td><td>mean/max</td><td>平均/最大逾期天数</td></tr>
+        <tr><td>POS_SK_DPD_DEF_MEAN/MAX</td><td>mean/max</td><td>平均/最大逾期天数（不含宽限期）</td></tr>
+        <tr><td>POS_CNT_INSTALMENT_MEAN/MAX</td><td>mean/max</td><td>平均/最大总分期数</td></tr>
+        <tr><td>POS_CNT_INSTALMENT_FUTURE_MEAN/MAX</td><td>mean/max</td><td>平均/最大剩余分期数</td></tr>
+        <tr><td>POS_DPD_RATIO</td><td>DPD>0月/TOTAL</td><td>逾期月份占比</td></tr>
+        <tr><td>POS_INSTALLMENT_PROGRESS</td><td>INSTALMENT-FUTURE</td><td>平均还款进度</td></tr>
+        <tr><td>POS_ACTIVE_RATIO</td><td>Active/TOTAL</td><td>活跃账户占比，多头借贷信号</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Processing -->
+  <div class="section" id="processing">
+    <h2>数据处理补充说明</h2>
+    <h3>编码方式</h3>
+    <table>
+      <thead><tr><th>类别数量</th><th>编码方法</th><th>例子</th></tr></thead>
+      <tbody>
+        <tr><td>2 种</td><td>Label Encoding &rarr; 0/1</td><td>性别 M/F</td></tr>
+        <tr><td>3-10 种</td><td>One-Hot Encoding</td><td>教育程度</td></tr>
+        <tr><td>11+ 种</td><td>Frequency Encoding（默认）</td><td>用该类别出现比例替代</td></tr>
+      </tbody>
+    </table>
+    <h3>缺失值处理</h3>
+    <pre>缺失率 > 80% 的列 &rarr; 直接删除
+数值列 &rarr; 按 NAME_INCOME_TYPE 分组中位数填充 &rarr; 全局中位数兜底 &rarr; 0 填充
+类别列 &rarr; 众数填充</pre>
+    <h3>高相关特征删除</h3>
+    <p>Pearson 相关系数 > 0.95 的特征对中删除后出现的那个。从 277 个特征删到 222 个。</p>
+  </div>
+
+  <div style="margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+    <p style="font-family: var(--font-display); font-size: 13px; color: var(--text-dim);">
+      <a href="index.html">返回学习指南</a> &middot; <a href="data_dictionary.html">数据字典</a> &middot; <a href="https://github.com/GoDiao/home-credit" target="_blank">GitHub</a>
+    </p>
+  </div>
+</div>
+
+<script>
+const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.05 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+const links = document.querySelectorAll('.nav-link');
+const secs = document.querySelectorAll('.section[id]');
+window.addEventListener('scroll', () => {
+  let c = '';
+  secs.forEach(s => { if (window.scrollY >= s.offsetTop - 100) c = s.id; });
+  links.forEach(l => { l.classList.remove('active'); if (l.getAttribute('href') === '#' + c) l.classList.add('active'); });
+});
+</script>
+</body>
+</html>

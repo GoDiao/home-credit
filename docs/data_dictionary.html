@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据字典 - 信用风险建模</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a; --bg-card: #111827; --border: rgba(255,255,255,0.06);
+  --text: #e2e8f0; --text-muted: #64748b; --text-dim: #475569;
+  --gold: #c8aa6e; --gold-light: #e8c98a;
+  --blue: #3b82f6; --emerald: #10b981; --rose: #f43f5e;
+  --code-bg: #0d1117; --sidebar-w: 280px;
+  --font-display: 'Outfit', sans-serif; --font-body: 'Noto Serif SC', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.8; -webkit-font-smoothing: antialiased; }
+.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: linear-gradient(180deg, #0d1220, #0a0e1a); border-right: 1px solid var(--border); padding: 32px 0; overflow-y: auto; z-index: 100; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+.sidebar-logo { padding: 0 24px 28px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.sidebar-logo h1 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold); }
+.sidebar-logo p { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-display); }
+.nav-section { padding: 0 16px; margin-bottom: 8px; }
+.nav-section-title { font-family: var(--font-display); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); padding: 8px 12px 4px; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-family: var(--font-display); font-size: 13px; transition: all 0.2s; }
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-link.active { color: var(--gold); background: rgba(200,170,110,0.08); }
+.nav-link .nav-num { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); min-width: 20px; }
+.nav-link.active .nav-num { color: var(--gold); }
+.main { margin-left: var(--sidebar-w); max-width: 960px; padding: 48px 60px 120px; }
+.back-link { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 13px; color: var(--gold); text-decoration: none; margin-bottom: 24px; }
+.back-link:hover { color: var(--gold-light); }
+h1.page-title { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
+.page-desc { font-size: 15px; color: var(--text-muted); margin-bottom: 48px; }
+h2 { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #f1f5f9; margin: 48px 0 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+h2 .table-tag { font-family: var(--font-mono); font-size: 12px; color: var(--gold); background: rgba(200,170,110,0.1); padding: 2px 8px; border-radius: 4px; margin-left: 10px; }
+h2 .rows-tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-left: 8px; }
+table { width: 100%; border-collapse: collapse; margin: 0 0 32px; font-size: 14px; }
+thead th { font-family: var(--font-display); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); position: sticky; top: 0; }
+td { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text); vertical-align: top; }
+tr:hover { background: rgba(255,255,255,0.02); }
+td:first-child { font-family: var(--font-mono); font-size: 13px; color: var(--gold-light); white-space: nowrap; }
+td:nth-child(2) { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+td code { font-family: var(--font-mono); font-size: 12px; background: rgba(200,170,110,0.08); color: var(--gold-light); padding: 1px 5px; border-radius: 3px; }
+.diagram { background: var(--code-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 20px 24px; margin: 16px 0 32px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; color: var(--text-muted); white-space: pre; overflow-x: auto; }
+.section { opacity: 0; transform: translateY(16px); transition: opacity 0.5s, transform 0.5s; }
+.section.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding: 24px 20px 80px; } h1.page-title { font-size: 26px; } }
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo"><h1>Credit Risk</h1><p>Data Dictionary</p></div>
+  <div class="nav-section">
+    <div class="nav-section-title">导航</div>
+    <a href="index.html" class="nav-link"><span class="nav-num">&larr;</span> 返回学习指南</a>
+    <a href="feature_engineering.html" class="nav-link"><span class="nav-num">&rarr;</span> 特征工程详解</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">数据表</div>
+    <a href="#application" class="nav-link active"><span class="nav-num">1</span> 主表</a>
+    <a href="#bureau" class="nav-link"><span class="nav-num">2</span> 征信机构</a>
+    <a href="#bureau_balance" class="nav-link"><span class="nav-num">3</span> 征信月度</a>
+    <a href="#cc" class="nav-link"><span class="nav-num">4</span> 信用卡</a>
+    <a href="#installments" class="nav-link"><span class="nav-num">5</span> 还款记录</a>
+    <a href="#pos" class="nav-link"><span class="nav-num">6</span> POS/现金</a>
+    <a href="#previous" class="nav-link"><span class="nav-num">7</span> 历史申请</a>
+  </div>
+</nav>
+
+<div class="main">
+  <a href="index.html" class="back-link">&larr; 返回学习指南</a>
+  <h1 class="page-title">数据字典</h1>
+  <p class="page-desc">Home Credit 数据集全部 8 张表、218 个字段的完整说明。数据来源：<a href="https://www.kaggle.com/c/home-credit-default-risk/data" target="_blank">Kaggle</a></p>
+
+  <div class="diagram">application_train/test (主表)
+    │
+    ├── bureau (征信历史)
+    │     └── bureau_balance (月度状态)
+    │
+    └── previous_application (历史申请)
+            ├── credit_card_balance (信用卡账单)
+            ├── installments_payments (还款记录)
+            └── POS_CASH_balance (POS/现金)</div>
+
+  <!-- 1. application -->
+  <div class="section" id="application">
+    <h2>1. application_train / test<span class="table-tag">主表</span><span class="rows-tag">307,511 行 &times; 122 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_CURR</td><td>int</td><td>贷款申请 ID</td></tr>
+        <tr><td>TARGET</td><td>int</td><td><strong>(仅训练集)</strong> 1=违约，0=正常</td></tr>
+        <tr><td>NAME_CONTRACT_TYPE</td><td>str</td><td>贷款类型：Cash loans / Revolving loans</td></tr>
+        <tr><td>CODE_GENDER</td><td>str</td><td>性别：M / F / XNA</td></tr>
+        <tr><td>FLAG_OWN_CAR</td><td>str</td><td>是否有车：Y / N</td></tr>
+        <tr><td>FLAG_OWN_REALTY</td><td>str</td><td>是否有房产：Y / N</td></tr>
+        <tr><td>CNT_CHILDREN</td><td>int</td><td>子女数量</td></tr>
+        <tr><td>AMT_INCOME_TOTAL</td><td>float</td><td>年收入</td></tr>
+        <tr><td>AMT_CREDIT</td><td>float</td><td>贷款金额</td></tr>
+        <tr><td>AMT_ANNUITY</td><td>float</td><td>年还款额</td></tr>
+        <tr><td>AMT_GOODS_PRICE</td><td>float</td><td>消费贷款的商品价格</td></tr>
+        <tr><td>NAME_TYPE_SUITE</td><td>str</td><td>申请时陪同人员</td></tr>
+        <tr><td>NAME_INCOME_TYPE</td><td>str</td><td>收入类型：Working / Pensioner 等</td></tr>
+        <tr><td>NAME_EDUCATION_TYPE</td><td>str</td><td>学历：Secondary / Higher 等</td></tr>
+        <tr><td>NAME_FAMILY_STATUS</td><td>str</td><td>婚姻状况：Married / Single 等</td></tr>
+        <tr><td>NAME_HOUSING_TYPE</td><td>str</td><td>住房情况：House / With parents 等</td></tr>
+        <tr><td>REGION_POPULATION_RELATIVE</td><td>float</td><td>居住地人口密度（归一化）</td></tr>
+        <tr><td>DAYS_BIRTH</td><td>int</td><td>申请时年龄（天数，负值）</td></tr>
+        <tr><td>DAYS_EMPLOYED</td><td>int</td><td>当前工作开始距今天数（365243=退休）</td></tr>
+        <tr><td>DAYS_REGISTRATION</td><td>int</td><td>最近更改注册距今天数</td></tr>
+        <tr><td>DAYS_ID_PUBLISH</td><td>int</td><td>最近更换身份证距今天数</td></tr>
+        <tr><td>OWN_CAR_AGE</td><td>float</td><td>车龄（年）</td></tr>
+        <tr><td>FLAG_MOBIL</td><td>int</td><td>是否提供手机</td></tr>
+        <tr><td>FLAG_EMP_PHONE</td><td>int</td><td>是否提供工作电话</td></tr>
+        <tr><td>FLAG_WORK_PHONE</td><td>int</td><td>是否提供家庭电话</td></tr>
+        <tr><td>FLAG_CONT_MOBILE</td><td>int</td><td>手机是否可接通</td></tr>
+        <tr><td>FLAG_PHONE</td><td>int</td><td>是否提供座机</td></tr>
+        <tr><td>FLAG_EMAIL</td><td>int</td><td>是否提供邮箱</td></tr>
+        <tr><td>OCCUPATION_TYPE</td><td>str</td><td>职业类型：Laborers / Sales staff 等</td></tr>
+        <tr><td>CNT_FAM_MEMBERS</td><td>float</td><td>家庭成员数</td></tr>
+        <tr><td>REGION_RATING_CLIENT</td><td>int</td><td>地区评级（1-3）</td></tr>
+        <tr><td>REGION_RATING_CLIENT_W_CITY</td><td>int</td><td>地区评级含城市（1-3）</td></tr>
+        <tr><td>WEEKDAY_APPR_PROCESS_START</td><td>str</td><td>申请星期几</td></tr>
+        <tr><td>HOUR_APPR_PROCESS_START</td><td>int</td><td>申请时段（小时）</td></tr>
+        <tr><td>REG_REGION_NOT_LIVE_REGION</td><td>int</td><td>户籍地 &ne; 居住地（省级）</td></tr>
+        <tr><td>REG_REGION_NOT_WORK_REGION</td><td>int</td><td>户籍地 &ne; 工作地（省级）</td></tr>
+        <tr><td>LIVE_REGION_NOT_WORK_REGION</td><td>int</td><td>居住地 &ne; 工作地（省级）</td></tr>
+        <tr><td>REG_CITY_NOT_LIVE_CITY</td><td>int</td><td>户籍地 &ne; 居住地（市级）</td></tr>
+        <tr><td>REG_CITY_NOT_WORK_CITY</td><td>int</td><td>户籍地 &ne; 工作地（市级）</td></tr>
+        <tr><td>LIVE_CITY_NOT_WORK_CITY</td><td>int</td><td>居住地 &ne; 工作地（市级）</td></tr>
+        <tr><td>ORGANIZATION_TYPE</td><td>str</td><td>工作单位类型（58 种）</td></tr>
+        <tr><td>EXT_SOURCE_1</td><td>float</td><td>外部征信评分 1（归一化，越高越安全）</td></tr>
+        <tr><td>EXT_SOURCE_2</td><td>float</td><td>外部征信评分 2</td></tr>
+        <tr><td>EXT_SOURCE_3</td><td>float</td><td>外部征信评分 3</td></tr>
+        <tr><td>APARTMENTS_AVG ~ NONLIVINGAREA_AVG</td><td>float</td><td>住房面积/公共区域/电梯等建筑信息均值（14 个）</td></tr>
+        <tr><td>APARTMENTS_MODE ~ NONLIVINGAREA_MODE</td><td>float</td><td>同上，众数（14 个）</td></tr>
+        <tr><td>APARTMENTS_MEDI ~ NONLIVINGAREA_MEDI</td><td>float</td><td>同上，中位数（14 个）</td></tr>
+        <tr><td>FONDKAPREMONT_MODE</td><td>str</td><td>物业维修基金类型</td></tr>
+        <tr><td>HOUSETYPE_MODE</td><td>str</td><td>房屋类型</td></tr>
+        <tr><td>TOTALAREA_MODE</td><td>float</td><td>总面积（归一化）</td></tr>
+        <tr><td>WALLSMATERIAL_MODE</td><td>str</td><td>墙体材料</td></tr>
+        <tr><td>EMERGENCYSTATE_MODE</td><td>str</td><td>是否有应急通道</td></tr>
+        <tr><td>OBS_30_CNT_SOCIAL_CIRCLE</td><td>float</td><td>社交圈 30 天逾期观察人数</td></tr>
+        <tr><td>DEF_30_CNT_SOCIAL_CIRCLE</td><td>float</td><td>社交圈 30 天逾期违约人数</td></tr>
+        <tr><td>OBS_60_CNT_SOCIAL_CIRCLE</td><td>float</td><td>社交圈 60 天逾期观察人数</td></tr>
+        <tr><td>DEF_60_CNT_SOCIAL_CIRCLE</td><td>float</td><td>社交圈 60 天逾期违约人数</td></tr>
+        <tr><td>DAYS_LAST_PHONE_CHANGE</td><td>int</td><td>最近换手机号距今天数</td></tr>
+        <tr><td>FLAG_DOCUMENT_2 ~ 21</td><td>int</td><td>是否提供第 N 份文件（20 个 0/1）</td></tr>
+        <tr><td>AMT_REQ_CREDIT_BUREAU_HOUR</td><td>float</td><td>申请前 1 小时征信查询次数</td></tr>
+        <tr><td>AMT_REQ_CREDIT_BUREAU_DAY</td><td>float</td><td>申请前 1 天征信查询次数</td></tr>
+        <tr><td>AMT_REQ_CREDIT_BUREAU_WEEK</td><td>float</td><td>申请前 1 周征信查询次数</td></tr>
+        <tr><td>AMT_REQ_CREDIT_BUREAU_MON</td><td>float</td><td>申请前 1 月征信查询次数</td></tr>
+        <tr><td>AMT_REQ_CREDIT_BUREAU_QRT</td><td>float</td><td>申请前 1 季度征信查询次数</td></tr>
+        <tr><td>AMT_REQ_CREDIT_BUREAU_YEAR</td><td>float</td><td>申请前 1 年征信查询次数</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. bureau -->
+  <div class="section" id="bureau">
+    <h2>2. bureau<span class="table-tag">征信机构历史</span><span class="rows-tag">1,716,428 行 &times; 17 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_CURR</td><td>int</td><td>关联到主表的客户 ID</td></tr>
+        <tr><td>SK_ID_BUREAU</td><td>int</td><td>征信记录 ID（关联到 bureau_balance）</td></tr>
+        <tr><td>CREDIT_ACTIVE</td><td>str</td><td>信贷状态：Active / Closed / Sold / Bad debt</td></tr>
+        <tr><td>CREDIT_CURRENCY</td><td>str</td><td>币种</td></tr>
+        <tr><td>DAYS_CREDIT</td><td>int</td><td>征信记录距今天数（负值）</td></tr>
+        <tr><td>CREDIT_DAY_OVERDUE</td><td>int</td><td>当前逾期天数</td></tr>
+        <tr><td>DAYS_CREDIT_ENDDATE</td><td>float</td><td>信贷到期剩余天数</td></tr>
+        <tr><td>DAYS_ENDDATE_FACT</td><td>float</td><td>信贷实际结束距今天数（仅已关闭）</td></tr>
+        <tr><td>AMT_CREDIT_MAX_OVERDUE</td><td>float</td><td>历史最大逾期金额</td></tr>
+        <tr><td>CNT_CREDIT_PROLONG</td><td>int</td><td>信贷延期次数</td></tr>
+        <tr><td>AMT_CREDIT_SUM</td><td>float</td><td>当前信贷总额</td></tr>
+        <tr><td>AMT_CREDIT_SUM_DEBT</td><td>float</td><td>当前未偿还债务</td></tr>
+        <tr><td>AMT_CREDIT_SUM_LIMIT</td><td>float</td><td>信用卡额度</td></tr>
+        <tr><td>AMT_CREDIT_SUM_OVERDUE</td><td>float</td><td>当前逾期金额</td></tr>
+        <tr><td>CREDIT_TYPE</td><td>str</td><td>信贷类型：Consumer / Car / Mortgage / Credit card 等</td></tr>
+        <tr><td>DAYS_CREDIT_UPDATE</td><td>int</td><td>最近征信信息更新距今天数</td></tr>
+        <tr><td>AMT_ANNUITY</td><td>float</td><td>征信信贷年还款额</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. bureau_balance -->
+  <div class="section" id="bureau_balance">
+    <h2>3. bureau_balance<span class="table-tag">征信月度状态</span><span class="rows-tag">27,299,925 行 &times; 3 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_BUREAU</td><td>int</td><td>关联到 bureau 表</td></tr>
+        <tr><td>MONTHS_BALANCE</td><td>int</td><td>月份（负值，-1=最近一个月）</td></tr>
+        <tr><td>STATUS</td><td>str</td><td>还款状态：C=已关闭，X=未知，0=无逾期，1=逾期1-30天，2=逾期31-60天，...5=逾期120+天</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. credit_card_balance -->
+  <div class="section" id="cc">
+    <h2>4. credit_card_balance<span class="table-tag">信用卡月度账单</span><span class="rows-tag">3,840,312 行 &times; 23 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_PREV</td><td>int</td><td>关联到 previous_application</td></tr>
+        <tr><td>SK_ID_CURR</td><td>int</td><td>关联到主表</td></tr>
+        <tr><td>MONTHS_BALANCE</td><td>int</td><td>月份（负值）</td></tr>
+        <tr><td>AMT_BALANCE</td><td>float</td><td>当月信用卡余额</td></tr>
+        <tr><td>AMT_CREDIT_LIMIT_ACTUAL</td><td>float</td><td>当月信用卡额度</td></tr>
+        <tr><td>AMT_DRAWINGS_ATM_CURRENT</td><td>float</td><td>当月 ATM 取现金额</td></tr>
+        <tr><td>AMT_DRAWINGS_CURRENT</td><td>float</td><td>当月总取现金额</td></tr>
+        <tr><td>AMT_DRAWINGS_OTHER_CURRENT</td><td>float</td><td>当月其他取现金额</td></tr>
+        <tr><td>AMT_DRAWINGS_POS_CURRENT</td><td>float</td><td>当月 POS 消费金额</td></tr>
+        <tr><td>AMT_INST_MIN_REGULARITY</td><td>float</td><td>当月最低还款额</td></tr>
+        <tr><td>AMT_PAYMENT_CURRENT</td><td>float</td><td>当月还款金额</td></tr>
+        <tr><td>AMT_PAYMENT_TOTAL_CURRENT</td><td>float</td><td>当月总还款金额（含分期）</td></tr>
+        <tr><td>AMT_RECEIVABLE_PRINCIPAL</td><td>float</td><td>应收本金</td></tr>
+        <tr><td>AMT_RECIVABLE</td><td>float</td><td>应收金额</td></tr>
+        <tr><td>AMT_TOTAL_RECEIVABLE</td><td>float</td><td>总应收金额（本金+利息）</td></tr>
+        <tr><td>CNT_DRAWINGS_ATM_CURRENT</td><td>int</td><td>当月 ATM 取现次数</td></tr>
+        <tr><td>CNT_DRAWINGS_CURRENT</td><td>int</td><td>当月总取现次数</td></tr>
+        <tr><td>CNT_DRAWINGS_OTHER_CURRENT</td><td>int</td><td>当月其他取现次数</td></tr>
+        <tr><td>CNT_DRAWINGS_POS_CURRENT</td><td>int</td><td>当月 POS 消费次数</td></tr>
+        <tr><td>CNT_INSTALMENT_MATURE_CUM</td><td>int</td><td>已还分期数</td></tr>
+        <tr><td>NAME_CONTRACT_STATUS</td><td>str</td><td>合同状态：Active / Completed 等</td></tr>
+        <tr><td>SK_DPD</td><td>int</td><td>逾期天数（含宽限期）</td></tr>
+        <tr><td>SK_DPD_DEF</td><td>int</td><td>逾期天数（不含宽限期）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. installments_payments -->
+  <div class="section" id="installments">
+    <h2>5. installments_payments<span class="table-tag">还款记录</span><span class="rows-tag">13,605,401 行 &times; 8 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_PREV</td><td>int</td><td>关联到 previous_application</td></tr>
+        <tr><td>SK_ID_CURR</td><td>int</td><td>关联到主表</td></tr>
+        <tr><td>NUM_INSTALMENT_VERSION</td><td>int</td><td>还款计划版本（0=信用卡）</td></tr>
+        <tr><td>NUM_INSTALMENT_NUMBER</td><td>int</td><td>第几期</td></tr>
+        <tr><td>DAYS_INSTALMENT</td><td>int</td><td>应还日期（距今天数，负值）</td></tr>
+        <tr><td>DAYS_ENTRY_PAYMENT</td><td>int</td><td>实际还款日期（距今天数，负值）</td></tr>
+        <tr><td>AMT_INSTALMENT</td><td>float</td><td>应还金额</td></tr>
+        <tr><td>AMT_PAYMENT</td><td>float</td><td>实际还款金额</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6. POS_CASH_balance -->
+  <div class="section" id="pos">
+    <h2>6. POS_CASH_balance<span class="table-tag">POS/现金贷款月度</span><span class="rows-tag">10,001,358 行 &times; 8 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_PREV</td><td>int</td><td>关联到 previous_application</td></tr>
+        <tr><td>SK_ID_CURR</td><td>int</td><td>关联到主表</td></tr>
+        <tr><td>MONTHS_BALANCE</td><td>int</td><td>月份（负值）</td></tr>
+        <tr><td>CNT_INSTALMENT</td><td>float</td><td>总分期数</td></tr>
+        <tr><td>CNT_INSTALMENT_FUTURE</td><td>float</td><td>剩余未还分期数</td></tr>
+        <tr><td>NAME_CONTRACT_STATUS</td><td>str</td><td>合同状态：Active / Completed 等</td></tr>
+        <tr><td>SK_DPD</td><td>int</td><td>逾期天数（含宽限期）</td></tr>
+        <tr><td>SK_DPD_DEF</td><td>int</td><td>逾期天数（不含宽限期）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. previous_application -->
+  <div class="section" id="previous">
+    <h2>7. previous_application<span class="table-tag">历史申请</span><span class="rows-tag">1,670,214 行 &times; 37 列</span></h2>
+    <table>
+      <thead><tr><th>字段</th><th>类型</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>SK_ID_PREV</td><td>int</td><td>历史申请 ID</td></tr>
+        <tr><td>SK_ID_CURR</td><td>int</td><td>关联到主表</td></tr>
+        <tr><td>NAME_CONTRACT_TYPE</td><td>str</td><td>贷款类型：Cash / Consumer / Revolving</td></tr>
+        <tr><td>AMT_ANNUITY</td><td>float</td><td>年还款额</td></tr>
+        <tr><td>AMT_APPLICATION</td><td>float</td><td>申请金额</td></tr>
+        <tr><td>AMT_CREDIT</td><td>float</td><td>实际批准金额</td></tr>
+        <tr><td>AMT_DOWN_PAYMENT</td><td>float</td><td>首付金额</td></tr>
+        <tr><td>AMT_GOODS_PRICE</td><td>float</td><td>商品价格</td></tr>
+        <tr><td>WEEKDAY_APPR_PROCESS_START</td><td>str</td><td>申请星期几</td></tr>
+        <tr><td>HOUR_APPR_PROCESS_START</td><td>int</td><td>申请时段</td></tr>
+        <tr><td>FLAG_LAST_APPL_PER_CONTRACT</td><td>str</td><td>是否为该合同的最后一次申请</td></tr>
+        <tr><td>NFLAG_LAST_APPL_IN_DAY</td><td>int</td><td>是否为当天最后一次申请</td></tr>
+        <tr><td>RATE_DOWN_PAYMENT</td><td>float</td><td>首付比例（归一化）</td></tr>
+        <tr><td>RATE_INTEREST_PRIMARY</td><td>float</td><td>主利率（归一化）</td></tr>
+        <tr><td>RATE_INTEREST_PRIVILEGED</td><td>float</td><td>优惠利率（归一化）</td></tr>
+        <tr><td>NAME_CASH_LOAN_PURPOSE</td><td>str</td><td>现金贷款用途</td></tr>
+        <tr><td>NAME_CONTRACT_STATUS</td><td>str</td><td>审批结果：Approved / Refused / Canceled</td></tr>
+        <tr><td>DAYS_DECISION</td><td>int</td><td>审批决定距今天数</td></tr>
+        <tr><td>NAME_PAYMENT_TYPE</td><td>str</td><td>还款方式</td></tr>
+        <tr><td>CODE_REJECT_REASON</td><td>str</td><td>拒绝原因</td></tr>
+        <tr><td>NAME_TYPE_SUITE</td><td>str</td><td>陪同人员</td></tr>
+        <tr><td>NAME_CLIENT_TYPE</td><td>str</td><td>客户类型：New / Refreshed / Repeater</td></tr>
+        <tr><td>NAME_GOODS_CATEGORY</td><td>str</td><td>商品类别</td></tr>
+        <tr><td>NAME_PORTFOLIO</td><td>str</td><td>贷款组合：POS / Cash / Cards / Car</td></tr>
+        <tr><td>NAME_PRODUCT_TYPE</td><td>str</td><td>产品类型：x-sell / walk-in</td></tr>
+        <tr><td>CHANNEL_TYPE</td><td>str</td><td>获客渠道</td></tr>
+        <tr><td>SELLERPLACE_AREA</td><td>int</td><td>销售区域</td></tr>
+        <tr><td>NAME_SELLER_INDUSTRY</td><td>str</td><td>卖方行业</td></tr>
+        <tr><td>CNT_PAYMENT</td><td>int</td><td>贷款期限（期数）</td></tr>
+        <tr><td>NAME_YIELD_GROUP</td><td>str</td><td>利率分组：low / middle / high</td></tr>
+        <tr><td>PRODUCT_COMBINATION</td><td>str</td><td>产品组合详情</td></tr>
+        <tr><td>DAYS_FIRST_DRAWING</td><td>float</td><td>首次放款距今天数</td></tr>
+        <tr><td>DAYS_FIRST_DUE</td><td>float</td><td>首次应还日期距今天数</td></tr>
+        <tr><td>DAYS_LAST_DUE_1ST_VERSION</td><td>float</td><td>最后应还日期（原始）距今天数</td></tr>
+        <tr><td>DAYS_LAST_DUE</td><td>float</td><td>最后应还日期（实际）距今天数</td></tr>
+        <tr><td>DAYS_TERMINATION</td><td>float</td><td>预计终止日期距今天数</td></tr>
+        <tr><td>NFLAG_INSURED_ON_APPROVAL</td><td>float</td><td>申请时是否要求保险</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); text-align: center;">
+    <p style="font-family: var(--font-display); font-size: 13px; color: var(--text-dim);">
+      <a href="index.html">返回学习指南</a> &middot; <a href="feature_engineering.html">特征工程详解</a> &middot; <a href="https://github.com/GoDiao/home-credit" target="_blank">GitHub</a>
+    </p>
+  </div>
+</div>
+
+<script>
+const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.05 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+const links = document.querySelectorAll('.nav-link');
+const secs = document.querySelectorAll('.section[id]');
+window.addEventListener('scroll', () => {
+  let c = '';
+  secs.forEach(s => { if (window.scrollY >= s.offsetTop - 100) c = s.id; });
+  links.forEach(l => { l.classList.remove('active'); if (l.getAttribute('href') === '#' + c) l.classList.add('active'); });
+});
+</script>
+</body>
+</html>
