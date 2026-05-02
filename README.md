@@ -14,11 +14,15 @@
 
 **1. Python（>= 3.11）**
 
-下载地址：https://www.python.org/downloads/
+```bash
+winget install Python.Python.3.12
+```
+
+或手动下载：https://www.python.org/downloads/
 
 安装时 **务必勾选** "Add Python to PATH"。
 
-验证安装：
+验证：
 ```bash
 python --version
 # 应显示 Python 3.11.x 或更高
@@ -26,11 +30,13 @@ python --version
 
 **2. Node.js（>= 18）**
 
-下载地址：https://nodejs.org/
+```bash
+winget install OpenJS.NodeJS.LTS
+```
 
-选择 LTS 版本，一路下一步即可。
+或手动下载：https://nodejs.org/ （选 LTS 版本）
 
-验证安装：
+验证：
 ```bash
 node --version
 # 应显示 v18.x.x 或更高
@@ -38,12 +44,11 @@ node --version
 
 **3. uv（Python 包管理器）**
 
-在终端运行：
 ```bash
 pip install uv
 ```
 
-验证安装：
+验证：
 ```bash
 uv --version
 ```
