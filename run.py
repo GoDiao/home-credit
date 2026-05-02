@@ -19,9 +19,6 @@ DATA_RAW = ROOT / "data" / "raw"
 DATA_PROCESSED = ROOT / "data" / "processed"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe" if sys.platform == "win32" else ROOT / ".venv" / "bin" / "python"
 
-# Kaggle 竞赛数据集名
-KAGGLE_COMPETITION = "home-credit-default-risk"
-
 
 def banner(text):
     print(f"\n{'='*60}")
@@ -83,44 +80,21 @@ def install_frontend_deps():
     run(["npm", "install"], cwd=DASHBOARD)
 
 
-def download_data():
-    """从 Kaggle 下载数据"""
-    banner("下载数据")
-
-    # 检查数据是否已存在
+def check_data():
+    """检查数据文件是否存在"""
     train_file = DATA_RAW / "application_train.csv"
     if train_file.exists():
-        print("  数据已存在，跳过下载")
-        return
+        print("  数据已存在")
+        return True
 
-    DATA_RAW.mkdir(parents=True, exist_ok=True)
-
-    # 尝试用 kaggle CLI 下载
-    try:
-        subprocess.run(["kaggle", "--version"], capture_output=True, check=True)
-        print(f"  使用 kaggle CLI 下载 {KAGGLE_COMPETITION} ...")
-        run([
-            "kaggle", "competitions", "download",
-            "-c", KAGGLE_COMPETITION,
-            "-p", str(DATA_RAW),
-            "--unzip",
-        ])
-        print("  下载完成")
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        print("  [提示] 未安装 kaggle CLI 或未配置 API Key")
-        print()
-        print("  请手动下载数据：")
-        print(f"  1. 访问 https://www.kaggle.com/competitions/{KAGGLE_COMPETITION}/data")
-        print("  2. 下载全部 CSV 文件")
-        print(f"  3. 解压到 {DATA_RAW}")
-        print()
-        print("  或者安装 kaggle CLI：")
-        print("    pip install kaggle")
-        print("    # 然后在 https://www.kaggle.com/settings 创建 API Token")
-        print("    # 将 kaggle.json 放到 ~/.kaggle/ (Linux/Mac) 或 %USERPROFILE%/.kaggle/ (Windows)")
-        print()
-
-        input("  数据放好后按回车继续...")
+    print()
+    print("  [错误] 未找到数据文件")
+    print(f"  请先下载数据到 {DATA_RAW}")
+    print()
+    print("  下载地址：https://www.kaggle.com/c/home-credit-default-risk/data")
+    print("  下载后解压 CSV 文件到 data/raw/ 目录")
+    print()
+    return False
 
 
 def run_pipeline():
@@ -173,7 +147,7 @@ def wait_for_server(url, timeout=30):
 
 def main():
     parser = argparse.ArgumentParser(description="Home Credit 风控建模项目 - 一键运行")
-    parser.add_argument("--skip", action="store_true", help="跳过数据下载和 Pipeline，直接启动 Dashboard")
+    parser.add_argument("--skip", action="store_true", help="跳过 Pipeline，直接启动 Dashboard")
     parser.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
     args = parser.parse_args()
 
@@ -186,7 +160,8 @@ def main():
     if not args.skip:
         install_python_deps()
         install_frontend_deps()
-        download_data()
+        if not check_data():
+            sys.exit(1)
         run_pipeline()
     else:
         # 即使 skip 也要确保依赖存在

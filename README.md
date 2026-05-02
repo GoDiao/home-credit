@@ -92,22 +92,15 @@ python run.py --skip
 
 ---
 
-### 数据下载说明
+### 数据下载
 
 数据来自 Kaggle 竞赛 [Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk/data)。
 
-**方式一：手动下载（推荐）**
 1. 注册 Kaggle 账号
 2. 访问上面的链接，下载全部 CSV 文件
 3. 解压到项目目录的 `data/raw/` 文件夹
 
-**方式二：kaggle CLI 自动下载**
-```bash
-pip install kaggle
-# 在 https://www.kaggle.com/settings 创建 API Token
-# 将 kaggle.json 放到 ~/.kaggle/ (Mac/Linux) 或 %USERPROFILE%/.kaggle/ (Windows)
-python run.py
-```
+放好后运行 `python run.py` 即可。
 
 ---
 
