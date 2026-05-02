@@ -6,36 +6,103 @@
 
 ---
 
-## 一键运行
+## 快速开始
 
-### 前置条件
+### 第一步：安装前置软件
 
-| 依赖 | 版本 | 安装 |
-|------|------|------|
-| Python | >= 3.11 | [python.org](https://www.python.org/downloads/) |
-| Node.js | >= 18 | [nodejs.org](https://nodejs.org/) |
-| uv | 最新 | `pip install uv` 或 [uv 官网](https://docs.astral.sh/uv/) |
+你需要安装 3 个工具：
 
-### 运行
+**1. Python（>= 3.11）**
+
+下载地址：https://www.python.org/downloads/
+
+安装时 **务必勾选** "Add Python to PATH"。
+
+验证安装：
+```bash
+python --version
+# 应显示 Python 3.11.x 或更高
+```
+
+**2. Node.js（>= 18）**
+
+下载地址：https://nodejs.org/
+
+选择 LTS 版本，一路下一步即可。
+
+验证安装：
+```bash
+node --version
+# 应显示 v18.x.x 或更高
+```
+
+**3. uv（Python 包管理器）**
+
+在终端运行：
+```bash
+pip install uv
+```
+
+验证安装：
+```bash
+uv --version
+```
+
+---
+
+### 第二步：克隆项目
 
 ```bash
-# 克隆仓库
-git clone <repo-url>
-cd home_credit
+git clone https://github.com/GoDiao/home-credit.git
+cd home-credit
+```
 
-# 一键运行（安装依赖 → 下载数据 → 跑 Pipeline → 启动 Dashboard）
+---
+
+### 第三步：一键运行
+
+```bash
 python run.py
 ```
 
-脚本会自动完成所有步骤，最后打开浏览器显示 Dashboard。
+脚本会自动完成以下所有步骤：
+1. 安装 Python 依赖（uv sync）
+2. 安装前端依赖（npm install）
+3. 引导下载 Kaggle 数据集
+4. 运行完整 Pipeline（数据处理 → 特征工程 → 模型训练 → 策略模拟 → 监控）
+5. 启动后端（端口 8000）和前端（端口 5174）
+6. 自动打开浏览器
 
-如果数据和依赖已经装好，只想启动 Dashboard：
+> Pipeline 运行时间约 10-30 分钟，取决于电脑性能。
+
+---
+
+### 只想看 Dashboard？
+
+如果数据和依赖已经装好，跳过 Pipeline 直接启动：
 
 ```bash
 python run.py --skip
 ```
 
-> **数据来源**：需要从 Kaggle 下载 [Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk/data) 数据集，脚本会引导你完成。也可以安装 `kaggle` CLI 自动下载。
+---
+
+### 数据下载说明
+
+数据来自 Kaggle 竞赛 [Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk/data)。
+
+**方式一：手动下载（推荐）**
+1. 注册 Kaggle 账号
+2. 访问上面的链接，下载全部 CSV 文件
+3. 解压到项目目录的 `data/raw/` 文件夹
+
+**方式二：kaggle CLI 自动下载**
+```bash
+pip install kaggle
+# 在 https://www.kaggle.com/settings 创建 API Token
+# 将 kaggle.json 放到 ~/.kaggle/ (Mac/Linux) 或 %USERPROFILE%/.kaggle/ (Windows)
+python run.py
+```
 
 ---
 
